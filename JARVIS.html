@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>JARVIS</title>
+<style>
+:root{--bg:#060d1a;--panel:#0d1a2e;--line:#1c3a5c;--text:#e6f1ff;--mute:#8fa6c2;--arc:#5ad8ff;--gold:#e6b34a;color-scheme:dark;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#060d1a;--panel:#0d1a2e;--line:#1c3a5c;--text:#e6f1ff;--mute:#8fa6c2;--arc:#5ad8ff;--gold:#e6b34a;color-scheme:dark}}
+@media (prefers-color-scheme:light){:root:not([data-theme="dark"]){--bg:#eef4fb;--panel:#ffffff;--line:#bcd0e6;--text:#0b2038;--mute:#52698a;--arc:#0a76a6;--gold:#a8741a;color-scheme:light}}
+:root[data-theme="dark"]{--bg:#060d1a;--panel:#0d1a2e;--line:#1c3a5c;--text:#e6f1ff;--mute:#8fa6c2;--arc:#5ad8ff;--gold:#e6b34a}
+*{box-sizing:border-box}
+html,body{margin:0;background:var(--bg);color:var(--text);font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+main{max-width:480px;margin:0 auto;padding:20px 16px 40px}
+.reactor{position:relative;width:min(78vw,300px);aspect-ratio:1;margin:8px auto 18px;display:grid;place-items:center}
+.ring{position:absolute;border-radius:50%;border:2px solid var(--arc)}
+.r1{inset:0;opacity:.35;border-style:dashed;animation:spin 40s linear infinite}
+.r2{inset:12%;opacity:.6;box-shadow:0 0 22px color-mix(in srgb,var(--arc) 45%,transparent),inset 0 0 22px color-mix(in srgb,var(--arc) 30%,transparent)}
+.r3{inset:24%;border-color:var(--gold);opacity:.85;box-shadow:0 0 28px color-mix(in srgb,var(--gold) 40%,transparent)}
+@keyframes spin{to{transform:rotate(360deg)}}
+@media (prefers-reduced-motion:reduce){.r1{animation:none}}
+.clock{position:relative;text-align:center}
+.time{font-size:clamp(2rem,11vw,2.8rem);font-weight:300;letter-spacing:.04em;font-variant-numeric:tabular-nums;text-shadow:0 0 14px color-mix(in srgb,var(--arc) 70%,transparent)}
+.date{color:var(--mute);font-size:.9rem;margin-top:2px}
+h1{font-size:1.35rem;font-weight:500;text-align:center;margin:0 0 4px}
+.sub{text-align:center;color:var(--mute);font-size:.92rem;margin:0 0 20px}
+h2{font-size:1rem;font-weight:600;margin:24px 0 10px;color:var(--gold)}
+.list{display:grid;gap:8px}
+.q{font:inherit;color:var(--text);background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:13px 14px;text-align:left;min-height:48px;cursor:pointer}
+.q:active{border-color:var(--arc)}
+.q small{display:block;color:var(--mute);margin-top:2px}
+.open{display:block;text-align:center;margin-top:12px;padding:14px;border-radius:10px;background:var(--arc);color:var(--bg);font-weight:600;text-decoration:none}
+.calc{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:12px}
+#disp{width:100%;font:inherit;font-size:1.3rem;text-align:right;color:var(--text);background:transparent;border:0;border-bottom:1px solid var(--line);padding:8px 4px;margin-bottom:10px}
+.keys{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+.k{font:inherit;font-size:1.1rem;color:var(--text);background:var(--bg);border:1px solid var(--line);border-radius:10px;min-height:48px;cursor:pointer}
+.k.op{color:var(--arc)}.k.eq{background:var(--gold);color:var(--bg);border-color:var(--gold)}
+.voice{display:grid;justify-items:center;gap:12px;margin-bottom:8px}
+.mic{width:88px;height:88px;border-radius:50%;border:2px solid var(--arc);background:radial-gradient(circle,color-mix(in srgb,var(--arc) 25%,transparent),transparent 70%),var(--panel);color:var(--arc);display:grid;place-items:center;cursor:pointer;box-shadow:0 0 18px color-mix(in srgb,var(--arc) 55%,transparent)}
+.mic svg{width:36px;height:36px}
+.mic:disabled{cursor:not-allowed}
+.mic.on{background:var(--arc);color:var(--bg);animation:glow 1.1s ease-in-out infinite}
+.mic.talk{border-color:var(--gold);color:var(--gold);box-shadow:0 0 30px var(--gold)}
+@keyframes glow{0%,100%{box-shadow:0 0 14px var(--arc),0 0 0 0 color-mix(in srgb,var(--arc) 60%,transparent)}50%{box-shadow:0 0 40px var(--arc),0 0 0 18px transparent}}
+@media (prefers-reduced-motion:reduce){.mic.on{animation:none;box-shadow:0 0 30px var(--arc)}}
+.vstate{color:var(--mute);font-size:.9rem;text-align:center;min-height:1.3em}
+.said{width:100%;background:var(--panel);border:1px solid var(--arc);border-radius:12px;padding:12px 14px;line-height:1.5;font-size:.95rem;display:grid;gap:6px;box-shadow:0 0 14px color-mix(in srgb,var(--arc) 25%,transparent)}
+.said b{color:var(--gold);font-weight:600}
+.stop{font:inherit;color:var(--text);background:transparent;border:1px solid var(--gold);border-radius:10px;min-height:44px;padding:0 18px;cursor:pointer}
+.support{color:var(--mute);font-size:.8rem;text-align:center;margin:0}
+.lang{display:flex;gap:8px}.lang .stop.on{background:var(--arc);color:var(--bg);border-color:var(--arc)}
+.act{display:block;text-align:center;padding:12px 18px;border-radius:10px;background:var(--gold);color:var(--bg);font-weight:600;text-decoration:none}
+:focus-visible{outline:2px solid var(--arc);outline-offset:2px}
+#toast{position:fixed;left:50%;bottom:calc(20px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--arc);color:var(--bg);padding:10px 16px;border-radius:10px;font-weight:600;opacity:0;pointer-events:none;transition:opacity .2s;max-width:90vw;text-align:center}
+#toast.on{opacity:1}
+.note{color:var(--mute);font-size:.82rem;margin-top:22px;line-height:1.5}
+</style>
+</head>
+<body>
+<main>
+  <div class="reactor" aria-hidden="true"><div class="ring r1"></div><div class="ring r2"></div><div class="ring r3"></div>
+    <div class="clock"><div class="time" id="time">--:--</div><div class="date" id="date"></div></div></div>
+  <h1 id="greet">Good day, Sir.</h1>
+  <p class="sub">JARVIS is ready. Tap the microphone and speak.</p>
+  <section class="voice" aria-label="Voice assistant">
+    <button id="mic" class="mic" type="button" aria-pressed="false" aria-label="Start listening"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3"/></svg></button>
+    <div class="lang"><button type="button" id="l-en" class="stop on">English</button><button type="button" id="l-ur" class="stop">اردو</button></div>
+    <div id="vstate" class="vstate" role="status"></div>
+    <div class="said"><div><b>You said:</b> <span id="said">Nothing yet.</span></div><div><b>JARVIS:</b> <span id="reply">Nothing yet.</span></div></div>
+    <div id="actions"></div>
+    <button id="stop" class="stop" type="button">Stop speaking</button>
+    <button id="vtest" class="stop" type="button">Test voice reply</button>
+    <button id="aibtn" class="stop" type="button">Turn on AI answers</button>
+    <p id="support" class="support"></p>
+  </section>
+
+  <h2>Ask JARVIS</h2>
+  <div class="list" id="prompts"></div>
+  <a class="open" href="https://claude.ai/new" target="_blank" rel="noopener">Open Claude</a>
+
+  <h2>Calculator</h2>
+  <div class="calc">
+    <input id="disp" inputmode="none" readonly value="" aria-label="Calculator display">
+    <div class="keys" id="keys"></div>
+  </div>
+  <p class="note">Voice on this page answers time, date and maths by itself, and speaks with your browser’s voice. It cannot read your email or calendar. General questions go to Claude AI only after you tap Turn on AI answers, and your question is sent to Claude. Speech recognition needs Chrome and an internet connection.</p>
+</main>
+<div id="toast" role="status"></div>
+<script>
+var P=[
+["Morning briefing","Good morning JARVIS, what is my day like? Check my calendar for today."],
+["Read my emails","JARVIS, read my 5 newest emails and summarize the important ones. Read only. Do not reply, forward or delete."],
+["Plan my day","JARVIS, help me plan my day using my calendar. Ask before adding anything."],
+["Set a reminder","JARVIS, remind me in 10 minutes to "],
+["Help me study","JARVIS, explain this topic in simple words: "],
+["Weather","JARVIS, what is the weather today? You may check my location."]
+];
+var pl=document.getElementById('prompts');
+P.forEach(function(p){var b=document.createElement('button');b.className='q';b.innerHTML='<span>'+p[0]+'</span><small>'+p[1].slice(0,52)+(p[1].length>52?'…':'')+'</small>';b.onclick=function(){copy(p[1])};pl.appendChild(b)});
+function toast(t){var e=document.getElementById('toast');e.textContent=t;e.className='on';setTimeout(function(){e.className=''},2400)}
+function copy(t){try{navigator.clipboard.writeText(t).then(function(){toast('Copied. Paste it in Claude.')},function(){toast('Press and hold the text to copy it.')})}catch(e){toast('Copy is blocked here. Type the request in Claude.')}}
+function tick(){var d=new Date(),h=d.getHours();
+document.getElementById('time').textContent=d.toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'});
+document.getElementById('date').textContent=d.toLocaleDateString([], {weekday:'long',day:'numeric',month:'long'});
+document.getElementById('greet').textContent=(h<12?'Good morning':h<17?'Good afternoon':'Good evening')+', Sir.'}
+tick();setInterval(tick,15000);
+var SR=window.SpeechRecognition||window.webkitSpeechRecognition,TTS=(function(){try{return !!window.speechSynthesis&&typeof window.SpeechSynthesisUtterance==='function'}catch(e){return false}})();
+var mic=document.getElementById('mic'),vs=document.getElementById('vstate'),saidEl=document.getElementById('said'),replyEl=document.getElementById('reply'),stopB=document.getElementById('stop'),rec=null,listening=false,IDLE='Tap the microphone and speak.';
+var sp=document.getElementById('support'),why=TTS?'available':(window.speechSynthesis?'speech is incomplete in this viewer':'speech output is not provided by this viewer');
+sp.textContent='Voice input: '+(SR?'available':'not supported here')+'. Voice reply: '+why+'.';
+if(!TTS){var a=document.createElement('a'),self=/^https?:/.test(location.protocol)?location.href:'https://claude.ai/artifact/34pWH1yc9Ug7hrU3NJg9xp';a.href=self;a.target='_blank';a.rel='noopener';a.textContent=' Open this page in Chrome';a.style.color='var(--arc)';sp.appendChild(a)}
+if(!SR){mic.disabled=true;mic.style.opacity='.45';vs.textContent='This browser can’t listen. Open this page in Chrome on Android.'}else{vs.textContent=IDLE}
+function chime(){try{var C=window.AudioContext||window.webkitAudioContext,c=new C(),o=c.createOscillator(),g=c.createGain();o.type='sine';o.frequency.value=660;g.gain.value=.08;o.connect(g);g.connect(c.destination);o.start();o.stop(c.currentTime+.18)}catch(e){}try{navigator.vibrate&&navigator.vibrate(120)}catch(e){}}
+function fallback(msg){mic.classList.remove('talk');chime();replyEl.style.fontSize='1.15rem';vs.textContent=msg+' The answer is on screen.'}
+function say(t){replyEl.textContent=t;
+if(!TTS){fallback('Speech is not available in this browser.');return}
+if(LANG==='ur'&&!pickVoice()){fallback('No Urdu voice is installed on this phone. Add Urdu in Text-to-speech settings.');return}
+var started=false,u=new SpeechSynthesisUtterance(t),v=pickVoice();u.lang=v?v.lang:(LANG==='ur'?'ur-PK':'en-US');if(v)u.voice=v;u.pitch=.9;u.rate=1;u.volume=1;
+u.onstart=function(){started=true;mic.classList.add('talk');vs.textContent='JARVIS is speaking…'};
+u.onend=function(){started=true;mic.classList.remove('talk');vs.textContent=IDLE};
+u.onerror=function(ev){started=true;if(ev&&(ev.error==='canceled'||ev.error==='interrupted')){mic.classList.remove('talk');return}fallback(ev&&ev.error==='not-allowed'?'The browser blocked speech.':'Speech failed ('+((ev&&ev.error)||'unknown')+').')};
+try{speechSynthesis.cancel();setTimeout(function(){try{speechSynthesis.resume();speechSynthesis.speak(u)}catch(e){started=true;fallback('Speech is unavailable here.')}},120);
+setTimeout(function(){if(!started){try{speechSynthesis.cancel()}catch(e){}fallback('The phone’s speech engine did not start. In Android Settings, open Text-to-speech output and install or select Google Speech Services.')}},2500)}catch(e){fallback('Speech is unavailable here.')}}
+stopB.onclick=function(){if(TTS)speechSynthesis.cancel();mic.classList.remove('talk');vs.textContent=SR?IDLE:vs.textContent};
+function pickVoice(){try{var p=LANG==='ur'?/^ur/i:/^en/i,L=speechSynthesis.getVoices()||[];return L.filter(function(x){return p.test(x.lang)&&x.localService})[0]||L.filter(function(x){return p.test(x.lang)})[0]||null}catch(e){return null}}
+function unlockTTS(){if(!TTS)return;try{var u=new SpeechSynthesisUtterance(' ');u.volume=0;speechSynthesis.speak(u)}catch(e){}}
+if(TTS){try{var showV=function(){var n=(speechSynthesis.getVoices()||[]).length;sp.firstChild.textContent=sp.firstChild.textContent.replace(/ \(voices: \d+\)$/,'')+' (voices: '+n+')'};speechSynthesis.onvoiceschanged=showV;setTimeout(showV,800)}catch(e){}}
+document.getElementById('vtest').onclick=function(){say('Hello Sir. I am JARVIS. Voice reply is working.')};
+var LANG='en',aiBusy=false,SITES={youtube:['YouTube','https://www.youtube.com'],google:['Google','https://www.google.com'],gmail:['Gmail','https://mail.google.com'],maps:['Maps','https://maps.google.com'],wikipedia:['Wikipedia','https://www.wikipedia.org'],whatsapp:['WhatsApp','https://web.whatsapp.com']},URS={'یوپٹیوب':'youtube','گوگل':'google','جی میل':'gmail','نقشہ':'maps'};
+saidEl.dir=replyEl.dir='auto';
+function showLink(label,url){var a=document.createElement('a'),box=document.getElementById('actions');a.className='act';a.href=url;a.target='_blank';a.rel='noopener';a.textContent=label;box.innerHTML='';box.appendChild(a)}
+function go(name,url){showLink('Open '+name,url);var w=null;try{w=window.open(url,'_blank')}catch(e){}if(w){try{w.opener=null}catch(e){}}return w?'Opening '+name+', Sir.':'Tap the button on screen to open '+name+', Sir.'}
+function setLang(l){LANG=l;document.getElementById('l-en').classList.toggle('on',l==='en');document.getElementById('l-ur').classList.toggle('on',l==='ur');vs.textContent=(l==='ur'&&TTS&&!pickVoice())?'Urdu selected. No Urdu voice found on this phone, so replies show on screen only.':IDLE}
+document.getElementById('l-en').onclick=function(){setLang('en')};document.getElementById('l-ur').onclick=function(){setLang('ur')};
+document.getElementById('aibtn').onclick=async function(){var b=this;try{var s=window.claude&&window.claude.use?await window.claude.use('sample'):null;if(!s){vs.textContent='AI answers are not available here. Open this page from claude.ai while logged in.';return}await s('Reply with the word OK.',{cache:false});b.textContent='AI answers are on';vs.textContent='AI answers are on.'}catch(e){vs.textContent=(e&&e.code==='not_granted')?'AI answers were not allowed.':'AI could not start: '+((e&&e.message)||'unknown error')}};
+async function askAI(q){if(aiBusy)return;aiBusy=true;vs.textContent='JARVIS is thinking…';replyEl.textContent='Thinking…';
+try{var s=window.claude&&window.claude.use?await window.claude.use('sample'):null;
+if(!s){say('AI answers are not available in this viewer, Sir. Open the page from claude.ai while logged in.');aiBusy=false;return}
+var r=await s('You are JARVIS, a calm, polite assistant. Call the user Sir. Answer in at most three short sentences of plain text with no markdown, so it can be read aloud. '+(LANG==='ur'?'Reply in Urdu script.':'Reply in English.')+'\n\nQuestion: '+q,{cache:false});
+say(String(r.text||'').replace(/[*#_`]/g,'').trim()||'I have no answer for that, Sir.')}
+catch(e){var c=e&&e.code;say(c==='not_granted'?'AI answers need your permission, Sir. Tap Turn on AI answers.':c==='rate_limited'?'Too many questions too quickly, Sir. Please wait a moment.':'I could not reach the AI, Sir. Try again.')}
+aiBusy=false}
+function route(t){var l=t.toLowerCase(),m,k;document.getElementById('actions').innerHTML='';
+var isUr=/[\u0600-\u06ff]/.test(t);
+if(/\b(open|go to|launch|start)\b/.test(l)||t.indexOf('کھول')>-1){for(k in SITES)if(l.indexOf(k)>-1)return say(go(SITES[k][0],SITES[k][1]));for(k in URS)if(t.indexOf(k)>-1)return say(go(SITES[URS[k]][0],SITES[URS[k]][1]))}
+if(m=(l.match(/(?:play|search)\s+(.+?)\s+on youtube/)||l.match(/youtube search\s+(.+)/)))return say(go('YouTube results','https://www.youtube.com/results?search_query='+encodeURIComponent(m[1])));
+if(m=(l.match(/search (?:google )?for\s+(.+)/)||l.match(/^google\s+(.+)/)))return say(go('Google results','https://www.google.com/search?q='+encodeURIComponent(m[1])));
+if(isUr&&t.indexOf('وقت')>-1)return say('اس وقت '+new Date().toLocaleTimeString('ur-PK',{hour:'numeric',minute:'2-digit'})+' ہوئے ہیں، سر۔');
+if(isUr&&(t.indexOf('تاریخ')>-1||t.indexOf('آج')>-1))return say('آج '+new Date().toLocaleDateString('ur-PK',{weekday:'long',day:'numeric',month:'long',year:'numeric'})+' ہے، سر۔');
+var a=answer(t);if(a!==null)return say(a);askAI(t)}
+function calc(q){var s=q.replace(/,/g,'').replace(/(\d+(?:\.\d+)?)\s*(?:percent|%)\s*of\s*/g,'($1/100)*').replace(/square root of\s*(\d+(?:\.\d+)?)/g,'Math.sqrt($1)').replace(/\bto the power of\b/g,'**').replace(/\bplus\b/g,'+').replace(/\bminus\b/g,'-').replace(/\b(?:times|multiplied by|into|x)\b/g,'*').replace(/\b(?:divided by|over)\b/g,'/');
+s=s.replace(/Math\.sqrt/g,'§').replace(/[a-z]+/g,' ').replace(/§/g,'Math.sqrt').replace(/[?!]/g,'').replace(/\.\s*$/,'');
+var chk=s.replace(/Math\.sqrt/g,''),hasOp=/[+\-*\/]/.test(chk)||s.indexOf('Math.sqrt')>-1;
+if(!/\d/.test(chk)||!hasOp||!/^[0-9+\-*\/().\s]+$/.test(chk))return null;
+try{var r=Function('"use strict";return ('+s+')')();return isFinite(r)?String(+r.toFixed(6)):null}catch(e){return null}}
+function answer(q){var t=q.toLowerCase(),m=calc(t),d=new Date(),h=d.getHours();
+if(m!==null)return 'The answer is '+m+', Sir.';
+if(/\btime\b/.test(t))return 'It is '+d.toLocaleTimeString([], {hour:'numeric',minute:'2-digit'})+', Sir.';
+if(/\b(date|day)\b/.test(t))return 'Today is '+d.toLocaleDateString([], {weekday:'long',day:'numeric',month:'long',year:'numeric'})+', Sir.';
+if(/who are you|your name/.test(t))return 'I am JARVIS, your assistant, Sir. On this page I can tell you the time and date, and do maths.';
+if(/how are you/.test(t))return 'All systems running, Sir.';
+if(/thank/.test(t))return 'You are welcome, Sir.';
+if(/\b(hello|hi|hey|good morning|good afternoon|good evening)\b/.test(t))return (h<12?'Good morning':h<17?'Good afternoon':'Good evening')+', Sir. How can I help?';
+if(/what can you do|help/.test(t))return 'I can tell the time and date, and do calculations, Sir. For anything else, ask me in Claude.';
+return null}
+mic.onclick=function(){if(!SR)return;if(listening){rec.stop();return}
+if(TTS)speechSynthesis.cancel();mic.classList.remove('talk');
+unlockTTS();rec=new SR();rec.lang=LANG==='ur'?'ur-PK':'en-US';rec.interimResults=true;rec.continuous=false;rec.maxAlternatives=1;
+rec.onstart=function(){listening=true;mic.classList.add('on');mic.setAttribute('aria-pressed','true');vs.textContent='Listening… speak now.'};
+rec.onresult=function(e){var t='',fin=false;for(var i=e.resultIndex;i<e.results.length;i++){t+=e.results[i][0].transcript;if(e.results[i].isFinal)fin=true}saidEl.textContent=t;if(fin&&t.trim())route(t)};
+rec.onerror=function(e){var blocked='Microphone is blocked. Allow it in Chrome’s site settings and try again. If this page is open inside another app, open its link in Chrome.',m={'not-allowed':blocked,'service-not-allowed':blocked,'no-speech':'I heard nothing. Tap the microphone and try again.','audio-capture':'No microphone was found.','network':'Speech recognition needs an internet connection.','aborted':IDLE};vs.textContent=m[e.error]||('Voice error: '+e.error)};
+rec.onend=function(){listening=false;mic.classList.remove('on');mic.setAttribute('aria-pressed','false');if(vs.textContent.indexOf('Listening')===0)vs.textContent=IDLE};
+try{rec.start()}catch(err){vs.textContent='Could not start listening: '+err.message}};
+var disp=document.getElementById('disp'),keys=['C','(',')','/','7','8','9','*','4','5','6','-','1','2','3','+','0','.','%','='];
+var kb=document.getElementById('keys');
+keys.forEach(function(k){var b=document.createElement('button');b.className='k'+('/*-+(),C'.indexOf(k)>-1&&k!==','?' op':'')+(k==='='?' eq':'');b.textContent=k;b.onclick=function(){press(k)};kb.appendChild(b)});
+function press(k){if(k==='C'){disp.value='';return}
+if(k==='='){var s=disp.value.replace(/(\d+(?:\.\d+)?)%/g,'($1/100)');
+if(!/^[0-9+\-*\/().\s]+$/.test(s)||!s.trim()){disp.value='';return}
+try{var r=Function('"use strict";return ('+s+')')();disp.value=isFinite(r)?String(+r.toFixed(10)):'Error'}catch(e){disp.value='Error'}return}
+if(disp.value==='Error')disp.value='';disp.value+=k}
+</script>
+</body>
+</html>
